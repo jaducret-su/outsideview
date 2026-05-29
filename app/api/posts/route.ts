@@ -4,6 +4,7 @@ import { supabase } from "@/lib/supabase";
 function randomName() {
   const adjectives = ["Quiet", "Wandering", "Silver", "Hidden", "Brave", "Gentle"];
   const animals = ["Fox", "Owl", "River", "Maple", "Wolf", "Ocean"];
+
   return `${adjectives[Math.floor(Math.random() * adjectives.length)]}${
     animals[Math.floor(Math.random() * animals.length)]
   }${Math.floor(Math.random() * 1000)}`;
@@ -50,6 +51,9 @@ export async function POST(req: Request) {
 
     return NextResponse.json({ success: true, data });
   } catch (err: any) {
-    return NextResponse.json({ error: err.message || "Unknown error" }, { status: 500 });
+    return NextResponse.json(
+      { error: err.message || "Unknown error" },
+      { status: 500 }
+    );
   }
 }
