@@ -14,12 +14,12 @@ export async function POST(req: Request) {
   try {
     const { post_id, body, perspective_tag } = await req.json();
 
-    if (!postId || !body) {
+    if (!post_id || !body) {
       return NextResponse.json({ error: "Missing post or comment" }, { status: 400 });
     }
 
     const { error } = await supabase.from("comments").insert({
-      post_id: postId,
+      post_id,
       body,
       anonymous_name: randomName(),
       helpful_count: 0,
