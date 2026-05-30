@@ -12,7 +12,7 @@ function randomName() {
 
 export async function POST(req: Request) {
   try {
-    const { postId, body } = await req.json();
+    const { post_id, body, perspective_tag } = await req.json();
 
     if (!postId || !body) {
       return NextResponse.json({ error: "Missing post or comment" }, { status: 400 });
@@ -23,6 +23,7 @@ export async function POST(req: Request) {
       body,
       anonymous_name: randomName(),
       helpful_count: 0,
+      perspective_tag,
     });
 
     if (error) {

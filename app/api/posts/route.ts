@@ -2,48 +2,71 @@ import { NextResponse } from "next/server";
 import { supabase } from "@/lib/supabase";
 
 function randomName() {
-  const adjectives = ["Quiet", "Wandering", "Silver", "Hidden", "Brave", "Gentle"];
-  const animals = ["Fox", "Owl", "River", "Maple", "Wolf", "Ocean"];
-
+  const adjectives = ["Quiet", "Silver", "Wandering", "Bright", "Hidden"];
+  const animals = ["Fox", "Maple", "Owl", "River", "Wolf"];
   return `${adjectives[Math.floor(Math.random() * adjectives.length)]}${
     animals[Math.floor(Math.random() * animals.length)]
-  }${Math.floor(Math.random() * 1000)}`;
+  }${Math.floor(Math.random() * 900 + 100)}`;
 }
 
 function guessCategory(text: string) {
   const lower = text.toLowerCase();
 
-  if (lower.includes("friend") || lower.includes("relationship") || lower.includes("dating")) return "Relationships";
-  if (lower.includes("job") || lower.includes("career") || lower.includes("work")) return "Career";
-  if (lower.includes("school") || lower.includes("college") || lower.includes("class")) return "School";
-  if (lower.includes("family") || lower.includes("parent")) return "Family";
-  if (lower.includes("lonely") || lower.includes("anxious") || lower.includes("sad")) return "Wellbeing";
+  if (lower.includes("job") || lower.includes("career") || lower.includes("work")) {
+    return "Career";
+  }
+
+  if (lower.includes("school") || lower.includes("college") || lower.includes("class")) {
+    return "School";
+  }
+
+  if (lower.includes("friend") || lower.includes("dating") || lower.includes("relationship")) {
+    return "Relationships";
+  }
+
+  if (lower.includes("family") || lower.includes("parent") || lower.includes("sibling")) {
+    return "Family";
+  }
+
+  if (lower.includes("anxious") || lower.includes("stress") || lower.includes("mental")) {
+    return "Wellbeing";
+  }
 
   return "Life";
 }
 
 export async function POST(req: Request) {
   try {
-    const { title, body } = await req.json();
-
-    if (!title || !body) {
-      return NextResponse.json({ error: "Missing title or body" }, { status: 400 });
-    }
-
-    const category = guessCategory(`${title} ${body}`);
-    const anonymous_name = randomName();
+    const {
+      title,
+      body,
+      perspective_request,
+      life_stage,
+      poll_question,
+      poll_option_a,
+      poll_option_b,
+      prompt,
+    } = await req.json();
 
     const { data, error } = await supabase
       .from("posts")
-      .insert({
-        title,
-        body,
-        tags: [category.toLowerCase()],
-        status: "approved",
-        category,
-        anonymous_name,
-      })
-      .select();
+      .insert([
+        {
+          title,
+          body,
+          category: guessCategory(`${title} ${body}`),
+          anonymous_name: randomName(),
+          status: "active",
+          perspective_request: perspective_request || null,
+          life_stage: life_stage || null,
+          poll_question: poll_question || null,
+          poll_option_a: poll_option_a || null,
+          poll_option_b: poll_option_b || null,
+          prompt: prompt || null,
+        },
+      ])
+      .select()
+      .single();
 
     if (error) {
       return NextResponse.json({ error: error.message }, { status: 500 });

@@ -7,6 +7,8 @@ export default function CreatePost() {
   const router = useRouter();
   const [title, setTitle] = useState("");
   const [body, setBody] = useState("");
+  const [perspectiveRequest, setPerspectiveRequest] = useState("");
+  const [lifeStage, setLifeStage] = useState("");
 
   async function submitPost(e: React.FormEvent) {
     e.preventDefault();
@@ -16,7 +18,11 @@ export default function CreatePost() {
       headers: {
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({ title, body }),
+      body: JSON.stringify({
+        title,
+        body,
+        perspectiveRequest,
+        lifeStage,}),
     });
 
     const data = await res.json();
@@ -48,6 +54,57 @@ export default function CreatePost() {
   value={body}
   onChange={(e) => setBody(e.target.value)}
 />
+
+<div>
+  <label className="block mb-2 text-sm text-gray-300">
+    What perspectives are you looking for?
+  </label>
+
+  <select
+    className="w-full border border-neutral-700 bg-neutral-900 text-white p-3 rounded"
+    value={perspectiveRequest}
+    onChange={(e) => setPerspectiveRequest(e.target.value)}
+  >
+    <option value="">Anyone</option>
+    <option value="People older than me">
+      People older than me
+    </option>
+    <option value="People younger than me">
+      People younger than me
+    </option>
+    <option value="Parents">
+      Parents
+    </option>
+    <option value="Students">
+      Students
+    </option>
+    <option value="Professionals">
+      Professionals
+    </option>
+    <option value="Different cultures">
+      Different cultures
+    </option>
+  </select>
+</div>
+
+<div>
+  <label className="block mb-2 text-sm text-gray-300">
+    Life Stage (Optional)
+  </label>
+
+  <select
+    className="w-full border border-neutral-700 bg-neutral-900 text-white p-3 rounded"
+    value={lifeStage}
+    onChange={(e) => setLifeStage(e.target.value)}
+  >
+    <option value="">Prefer not to say</option>
+    <option value="High School">High School</option>
+    <option value="College">College</option>
+    <option value="Early Career">Early Career</option>
+    <option value="Parent">Parent</option>
+    <option value="Retired">Retired</option>
+  </select>
+</div>
 
 <button className="bg-white text-black px-4 py-2 rounded font-medium">
   Post

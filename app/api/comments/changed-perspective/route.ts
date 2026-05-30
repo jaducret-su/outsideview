@@ -5,21 +5,9 @@ export async function POST(req: Request) {
   try {
     const { commentId } = await req.json();
 
-    const { data: comment, error: fetchError } = await supabase
-      .from("comments")
-      .select("helpful_count")
-      .eq("id", commentId)
-      .single();
-
-    if (fetchError) {
-      return NextResponse.json({ error: fetchError.message }, { status: 500 });
-    }
-
-    const currentCount = comment?.helpful_count || 0;
-
     const { error } = await supabase
       .from("comments")
-      .update({ helpful_count: currentCount + 1 })
+      .update({ changed_perspective: true })
       .eq("id", commentId);
 
     if (error) {

@@ -27,6 +27,7 @@ export default function Home() {
 >
   Browse Perspectives
 </Link>
+
         </div>
       </section>
     </main>

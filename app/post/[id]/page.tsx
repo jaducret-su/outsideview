@@ -1,8 +1,10 @@
-export const dynamic = "force-dynamic";
-
 import { supabase } from "@/lib/supabase";
 import CommentForm from "./comment-form";
 import HelpfulButton from "./HelpfulButton";
+import Link from "next/link";
+import ChangedPerspectiveButton from "./ChangedPerspectiveButton";
+
+export const dynamic = "force-dynamic";
 
 export default async function PostPage({
   params,
@@ -17,15 +19,23 @@ export default async function PostPage({
     .eq("id", id)
     .single();
 
-  if (postError || !post) {
-    return <main className="p-8 text-white">Post not found.</main>;
+  if (!post || postError) {
+    return (
+      <main className="mx-auto max-w-3xl p-6 text-white">
+        <Link
+        href="/feed"
+        className="text-sm text-gray-400 hover:text-white transition"> ← Back to Feed</Link>
+
+        <h1 className="mt-6 text-2xl font-bold">Post not found</h1>
+      </main>
+    );
   }
 
   const { data: comments } = await supabase
     .from("comments")
     .select("*")
     .eq("post_id", id)
-    .order("helpful_count", { ascending: false });
+    .order("created_at", { ascending: false });
 
   const { data: similarPosts } = await supabase
     .from("posts")
@@ -35,66 +45,103 @@ export default async function PostPage({
     .limit(3);
 
   return (
-    <main className="max-w-3xl mx-auto p-4 sm:p-8 text-white">
-      <span className="text-sm bg-neutral-800 text-white px-3 py-1 rounded-full">
-        {post.category || "Life"}
-      </span>
+    <main className="mx-auto max-w-3xl p-6 text-white">
+      <Link
+        href="/feed"
+        className="text-sm text-gray-400 hover:text-white transition"> ← Back to Feed</Link>
 
-      <h1 className="text-3xl sm:text-4xl font-bold mt-4 mb-2">
-        {post.title}
-      </h1>
+      <article className="mt-6 border-b border-neutral-800 pb-8">
+        <span className="inline-block rounded-full bg-neutral-800 px-3 py-1 text-sm text-purple-300">{post.category}</span>
 
-      <p className="text-gray-400 mb-6">
-        Posted by {post.anonymous_name || "Anonymous"}
-      </p>
+        <h1 className="mt-2 text-4xl font-bold text-white">{post.title}</h1>
 
-      <p className="whitespace-pre-wrap text-lg leading-8 text-gray-200">
-        {post.body}
-      </p>
+        <p className="mt-2 text-sm text-gray-400">
+          Shared by {post.anonymous_name}
+        </p>
 
-      <hr className="my-8 border-neutral-800" />
+        {post.perspective_request && (
+          <p className="mt-4 text-sm text-gray-400">
+            Looking for perspectives from: {post.perspective_request}
+          </p>
+        )}
 
-      <h2 className="text-2xl font-bold mb-4">Perspectives</h2>
+        {post.life_stage && (
+          <p className="mt-1 text-sm text-gray-400">
+            Life stage: {post.life_stage}
+          </p>
+        )}
 
-      <div className="space-y-4 mb-8">
-        {comments?.map((comment) => (
-          <div
-            key={comment.id}
-            className="border border-neutral-800 rounded-xl p-4 bg-neutral-900"
-          >
-            <p className="text-sm text-gray-400 mb-2">
-              {comment.anonymous_name || "Anonymous"}
-            </p>
+        <p className="mt-6 whitespace-pre-wrap text-lg leading-8 text-gray-200">
+          {post.body}
+        </p>
+      </article>
 
-            <p className="text-gray-200 whitespace-pre-wrap">{comment.body}</p>
+      <section className="mt-8">
+        <h2 className="text-2xl font-bold text-white">
+          {comments?.length || 0} Perspectives Received
+        </h2>
 
-            <HelpfulButton
-              commentId={comment.id}
-              currentCount={comment.helpful_count || 0}
-            />
-          </div>
-        ))}
-      </div>
+        <div className="mt-4 rounded-xl border border-neutral-800 bg-neutral-950 p-5">
+          <CommentForm postId={post.id} />
+        </div>
 
-      <CommentForm postId={id} />
+        <div className="mt-6 space-y-4">
+          {comments?.map((comment) => (
+            <div
+              key={comment.id}
+              className="rounded-xl border border-neutral-800 bg-neutral-950 p-5"
+            >
+              {comment.perspective_tag && (
+                <p className="mb-3 inline-block rounded-full bg-neutral-800 px-3 py-1 text-xs text-purple-300">
+                  {comment.perspective_tag}
+                </p>
+              )}
+
+              <p className="text-sm text-gray-400">
+                {comment.anonymous_name}
+              </p>
+
+              <p className="mt-3 whitespace-pre-wrap text-gray-200">
+                {comment.body}
+              </p>
+
+              <div className="mt-4 flex flex-wrap gap-3">
+                <HelpfulButton
+                  commentId={comment.id}
+                  initialCount={comment.helpful_count || 0}
+                />
+
+                <ChangedPerspectiveButton
+                  commentId={comment.id}
+                  initialValue={comment.changed_perspective || false}
+                />
+              </div>
+            </div>
+          ))}
+        </div>
+      </section>
 
       {similarPosts && similarPosts.length > 0 && (
-        <div className="mt-10">
-          <h2 className="text-2xl font-bold mb-4">Similar Stories</h2>
+        <section className="mt-10 border-t border-neutral-800 pt-8">
+          <h2 className="text-2xl font-bold text-white">Similar Stories</h2>
 
-          <div className="space-y-3">
-            {similarPosts.map((similar) => (
-              <a
-                key={similar.id}
-                href={`/post/${similar.id}`}
-                className="block border border-neutral-800 bg-neutral-900 p-4 rounded-xl hover:bg-neutral-800"
+          <div className="mt-4 space-y-3">
+            {similarPosts.map((similarPost) => (
+              <Link
+                key={similarPost.id}
+                href={`/post/${similarPost.id}`}
+                className="block rounded-xl border border-neutral-800 bg-neutral-950 p-4 hover:bg-neutral-900"
               >
-                <p className="font-semibold text-white">{similar.title}</p>
-                <p className="text-gray-400 line-clamp-2">{similar.body}</p>
-              </a>
+                <span className="inline-block rounded-full bg-neutral-800 px-2 py-1 text-xs text-purple-300">
+  {similarPost.category}
+</span>
+                <h3 className="mt-1 font-semibold text-white">
+                  {similarPost.title}
+                </h3>
+              </Link>
             ))}
           </div>
-        </div>
+        </section>
       )}
     </main>
   );

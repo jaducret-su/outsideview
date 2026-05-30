@@ -1,34 +1,41 @@
 "use client";
 
-import { useRouter } from "next/navigation";
+import { useState } from "react";
 
 export default function HelpfulButton({
   commentId,
-  currentCount,
+  initialCount,
 }: {
   commentId: string;
-  currentCount: number;
+  initialCount: number;
 }) {
-  const router = useRouter();
+  const [count, setCount] = useState(initialCount);
+  const [clicked, setClicked] = useState(false);
 
-  async function voteHelpful() {
-    await fetch("/api/comments/helpful", {
+  async function markHelpful() {
+    if (clicked) return;
+
+    const res = await fetch("/api/comments/helpful", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({ commentId, currentCount }),
+      body: JSON.stringify({ commentId }),
     });
 
-    router.refresh();
+    if (res.ok) {
+      setCount(count + 1);
+      setClicked(true);
+    }
   }
 
   return (
     <button
-      onClick={voteHelpful}
-      className="mt-3 text-sm border border-neutral-700 px-3 py-1 rounded text-gray-300 hover:bg-neutral-800"
+      onClick={markHelpful}
+      className="rounded bg-neutral-700 px-3 py-1 text-sm text-white transition hover:bg-neutral-600 disabled:opacity-60"
+      disabled={clicked}
     >
-      Helpful · {currentCount || 0}
+      Helpful · {count}
     </button>
   );
 }

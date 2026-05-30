@@ -37,6 +37,17 @@ export default function CommentForm({ postId }: { postId: string }) {
         onChange={(e) => setBody(e.target.value)}
       />
 
+        <select name="perspective_tag" className="w-full rounded p-3 text-black">
+  <option value="">Choose a perspective tag</option>
+  <option value="Been Through This">Been Through This</option>
+  <option value="Different Viewpoint">Different Viewpoint</option>
+  <option value="Professional Experience">Professional Experience</option>
+  <option value="Parent Perspective">Parent Perspective</option>
+  <option value="Student Perspective">Student Perspective</option>
+  <option value="Career Perspective">Career Perspective</option>
+  <option value="Relationship Perspective">Relationship Perspective</option>
+</select>
+
       <button className="bg-black text-white px-5 py-3 rounded">
         Share Perspective
       </button>
