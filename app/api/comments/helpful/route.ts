@@ -7,7 +7,7 @@ export async function POST(req: Request) {
 
     const { data: comment, error: fetchError } = await supabase
       .from("comments")
-      .select("helpful_count")
+      .select("helpful_count, anon_id")
       .eq("id", commentId)
       .single();
 
@@ -15,22 +15,26 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: fetchError.message }, { status: 500 });
     }
 
-    const currentCount = comment?.helpful_count || 0;
-
-    const { error } = await supabase
+    await supabase
       .from("comments")
-      .update({ helpful_count: currentCount + 1 })
+      .update({ helpful_count: (comment.helpful_count || 0) + 1 })
       .eq("id", commentId);
 
-    if (error) {
-      return NextResponse.json({ error: error.message }, { status: 500 });
+    if (comment.anon_id) {
+      const { data: profile } = await supabase
+        .from("anon_profiles")
+        .select("helpful_perspectives")
+        .eq("anon_id", comment.anon_id)
+        .single();
+
+      await supabase
+        .from("anon_profiles")
+        .update({ helpful_perspectives: (profile?.helpful_perspectives || 0) + 1 })
+        .eq("anon_id", comment.anon_id);
     }
 
     return NextResponse.json({ success: true });
   } catch (err: any) {
-    return NextResponse.json(
-      { error: err.message || "Unknown error" },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: err.message || "Unknown error" }, { status: 500 });
   }
 }

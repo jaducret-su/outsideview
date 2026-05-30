@@ -2,20 +2,31 @@ import Link from "next/link";
 
 export default function Navbar() {
   return (
-    <nav className="border-b border-neutral-800 bg-neutral-950 text-white px-8 py-4 flex justify-between items-center">
-      <Link href="/" className="font-bold text-xl">
-        OutsideView
-      </Link>
+    <header className="border-b border-neutral-900 bg-black/80 backdrop-blur">
+      <nav className="mx-auto flex max-w-5xl flex-col gap-4 px-6 py-4 text-white sm:flex-row sm:items-center sm:justify-between">
+        <Link href="/" className="text-xl font-bold">OutsideView</Link>
 
-      <div className="flex gap-4 items-center">
-        <Link href="/feed" className="flex items-center text-gray-300 hover:text-white">
-          Feed
-        </Link>
+        <div className="flex flex-wrap items-center gap-4 text-sm text-gray-400">
+          <Link href="/feed" className="transition hover:text-white">
+            Feed
+          </Link>
 
-        <Link href="/post" className="bg-white text-black px-3 py-2 rounded">
-          Share
-        </Link>
-      </div>
-    </nav>
+          <Link href="/perspectives" className="transition hover:text-white">
+            Perspectives
+          </Link>
+
+          <Link href="/reflection" className="transition hover:text-white">
+            Weekly Reflection
+          </Link>
+
+          <Link
+            href="/post"
+            className="rounded-lg bg-purple-600 px-4 py-2 font-medium text-white transition hover:bg-purple-700"
+          >
+            Share Story
+          </Link>
+        </div>
+      </nav>
+    </header>
   );
 }
