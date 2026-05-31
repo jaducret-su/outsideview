@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { getAnonymousIdentity } from "@/lib/anonymousIdentity";
+import ReportButton from "@/app/components/ReportButton";
 
 type PollComment = {
   id: string;
@@ -126,6 +127,7 @@ export default function PollSection({
                 {comment.anon_avatar} {comment.anon_name}
               </p>
               <p className="mt-2 text-gray-200">{comment.body}</p>
+              <ReportButton targetType="poll_comment" targetId={comment.id} />
             </div>
           ))}
         </div>
