@@ -59,12 +59,15 @@ export default async function PostPage({
     .order("helpful_count", { ascending: false })
     .order("created_at", { ascending: false });
 
-  const { data: pollComments } = await supabase
-    .from("poll_comments")
-    .select("*")
-    .eq("post_id", id)
-    .eq("status", "active")
-    .order("created_at", { ascending: false });
+  const { data: pollComments, error: pollCommentsError } = await supabase
+  .from("poll_comments")
+  .select("*")
+  .eq("post_id", id)
+  .order("created_at", { ascending: false });
+
+if (pollCommentsError) {
+  console.error("Poll comments error:", pollCommentsError.message);
+}
 
   const { data: similarPosts } = await supabase
     .from("posts")
@@ -106,7 +109,9 @@ export default async function PostPage({
             <span className="text-3xl">{post.anon_avatar || "🕊️"}</span>
 
             <div>
-              <p className="font-semibold">{post.anonymous_name || "Anonymous"}</p>
+              <p className="font-semibold">
+                {post.anonymous_name || "Anonymous"}
+              </p>
 
               <p className="text-sm text-gray-500">
                 Helpful Perspectives: {profile?.helpful_perspectives || 0}

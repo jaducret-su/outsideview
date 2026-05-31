@@ -4,7 +4,15 @@ import { moderateContent } from "@/lib/moderation";
 
 export async function POST(req: Request) {
   try {
-    const { post_id, body, anon_id, anon_name, anon_avatar } = await req.json();
+    const {
+      post_id,
+      body,
+      anon_id,
+      anon_name,
+      anon_avatar,
+      selected_choice,
+      selected_option,
+    } = await req.json();
 
     if (!post_id || !body || !anon_id) {
       return NextResponse.json(
@@ -28,6 +36,8 @@ export async function POST(req: Request) {
       anon_id,
       anon_name,
       anon_avatar,
+      selected_choice: selected_choice || null,
+      selected_option: selected_option || null,
       status: "active",
     });
 

@@ -6,9 +6,11 @@ import ReportButton from "@/app/components/ReportButton";
 
 type PollComment = {
   id: string;
-  body: string;
-  anon_name: string;
-  anon_avatar: string;
+  body: string | null;
+  anon_name?: string | null;
+  anon_avatar?: string | null;
+  selected_choice?: "a" | "b" | null;
+  selected_option?: string | null;
 };
 
 export default function PollSection({
@@ -32,7 +34,11 @@ export default function PollSection({
   const [b, setB] = useState(votesB);
   const [selectedChoice, setSelectedChoice] = useState<"a" | "b" | null>(null);
   const [body, setBody] = useState("");
-  const [pollComments, setPollComments] = useState(comments);
+  const [pollComments, setPollComments] = useState<PollComment[]>(comments || []);
+
+  const visiblePollComments = pollComments.filter(
+    (comment) => comment.body && comment.body.trim().length > 0
+  );
 
   const total = a + b;
   const percentA = total ? Math.round((a / total) * 100) : 0;
@@ -69,7 +75,13 @@ export default function PollSection({
       return;
     }
 
+    if (!selectedChoice) {
+      alert("Please vote before sharing the perspective behind your vote.");
+      return;
+    }
+
     const identity = getAnonymousIdentity();
+    const selectedOption = selectedChoice === "a" ? optionA : optionB;
 
     const res = await fetch("/api/poll-comments", {
       method: "POST",
@@ -82,6 +94,8 @@ export default function PollSection({
         anon_id: identity.anon_id,
         anon_name: identity.anon_name,
         anon_avatar: identity.anon_avatar,
+        selected_choice: selectedChoice,
+        selected_option: selectedOption,
       }),
     });
 
@@ -92,6 +106,8 @@ export default function PollSection({
           body: body.trim(),
           anon_name: identity.anon_name,
           anon_avatar: identity.anon_avatar,
+          selected_choice: selectedChoice,
+          selected_option: selectedOption,
         },
         ...pollComments,
       ]);
@@ -128,6 +144,22 @@ export default function PollSection({
     }
 
     return "bg-neutral-700";
+  }
+
+  function getSelectedOptionLabel(comment: PollComment) {
+    if (comment.selected_option) {
+      return comment.selected_option;
+    }
+
+    if (comment.selected_choice === "a") {
+      return optionA;
+    }
+
+    if (comment.selected_choice === "b") {
+      return optionB;
+    }
+
+    return null;
   }
 
   return (
@@ -227,7 +259,7 @@ export default function PollSection({
         />
 
         <p className="mt-2 text-xs text-gray-500">
-          For poll posts, this replaces the normal perspective section so the conversation stays focused.
+          You must vote before adding your poll perspective.
         </p>
 
         <button className="mt-3 rounded-lg bg-purple-600 px-4 py-2 text-sm font-medium text-white hover:bg-purple-700">
@@ -235,34 +267,52 @@ export default function PollSection({
         </button>
       </form>
 
-      {pollComments.length > 0 && (
-        <div className="mt-8">
-          <h3 className="text-xl font-bold">Poll Perspectives</h3>
+      <div className="mt-8">
+        <h3 className="text-xl font-bold">Poll Perspectives</h3>
 
-          <p className="mt-1 text-sm text-gray-500">
-            Why people voted the way they did.
+        <p className="mt-1 text-sm text-gray-500">
+          Why people voted the way they did.
+        </p>
+
+        {visiblePollComments.length === 0 ? (
+          <p className="mt-4 rounded-xl border border-neutral-800 bg-neutral-900 p-4 text-sm text-gray-500">
+            No poll perspectives yet. Vote and share the first one.
           </p>
-
+        ) : (
           <div className="mt-4 space-y-3">
-            {pollComments.map((comment) => (
-              <div
-                key={comment.id}
-                className="rounded-xl border border-neutral-800 bg-neutral-900 p-4"
-              >
-                <p className="text-sm text-gray-500">
-                  {comment.anon_avatar || "🕊️"} {comment.anon_name || "Anonymous"}
-                </p>
+            {visiblePollComments.map((comment) => {
+              const selectedOptionLabel = getSelectedOptionLabel(comment);
 
-                <p className="mt-2 whitespace-pre-wrap leading-7 text-gray-200">
-                  {comment.body}
-                </p>
+              return (
+                <div
+                  key={comment.id}
+                  className="rounded-xl border border-neutral-800 bg-neutral-900 p-4"
+                >
+                  {selectedOptionLabel && (
+                    <span className="mb-3 inline-block rounded-full border border-purple-500/30 bg-purple-500/10 px-3 py-1 text-xs font-medium text-purple-300">
+                      Voted: {selectedOptionLabel}
+                    </span>
+                  )}
 
-                <ReportButton targetType="poll_comment" targetId={comment.id} />
-              </div>
-            ))}
+                  <p className="text-sm text-gray-500">
+                    {comment.anon_avatar || "🕊️"}{" "}
+                    {comment.anon_name || "Anonymous"}
+                  </p>
+
+                  <p className="mt-2 whitespace-pre-wrap leading-7 text-gray-200">
+                    {comment.body}
+                  </p>
+
+                  <ReportButton
+                    targetType="poll_comment"
+                    targetId={comment.id}
+                  />
+                </div>
+              );
+            })}
           </div>
-        </div>
-      )}
+        )}
+      </div>
     </section>
   );
 }
