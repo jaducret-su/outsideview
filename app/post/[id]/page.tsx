@@ -42,6 +42,8 @@ export default async function PostPage({
     );
   }
 
+  const hasPoll = Boolean(post.poll_question);
+
   const { data: profile } = await supabase
     .from("anon_profiles")
     .select("*")
@@ -89,20 +91,22 @@ export default async function PostPage({
               Weekly Reflection
             </span>
           )}
+
+          {hasPoll && (
+            <span className="rounded-full border border-purple-500/30 px-3 py-1 text-sm text-purple-300">
+              Community Poll
+            </span>
+          )}
         </div>
 
-        <h1 className="mt-4 text-4xl font-bold leading-tight">
-          {post.title}
-        </h1>
+        <h1 className="mt-4 text-4xl font-bold leading-tight">{post.title}</h1>
 
         <div className="mt-5 rounded-2xl border border-neutral-800 bg-neutral-950 p-5">
           <div className="flex items-center gap-3">
             <span className="text-3xl">{post.anon_avatar || "🕊️"}</span>
 
             <div>
-              <p className="font-semibold">
-                {post.anonymous_name || "Anonymous"}
-              </p>
+              <p className="font-semibold">{post.anonymous_name || "Anonymous"}</p>
 
               <p className="text-sm text-gray-500">
                 Helpful Perspectives: {profile?.helpful_perspectives || 0}
@@ -121,9 +125,7 @@ export default async function PostPage({
               Perspective requested
             </p>
 
-            <p className="mt-1 text-gray-300">
-              {post.perspective_request}
-            </p>
+            <p className="mt-1 text-gray-300">{post.perspective_request}</p>
           </div>
         )}
 
@@ -146,7 +148,7 @@ export default async function PostPage({
         <ReportButton targetType="post" targetId={post.id} />
       </article>
 
-      {post.poll_question && (
+      {hasPoll && (
         <PollSection
           postId={post.id}
           question={post.poll_question}
@@ -158,71 +160,73 @@ export default async function PostPage({
         />
       )}
 
-      <section className="mt-8">
-        <h2 className="text-2xl font-bold">
-          {comments?.length || 0} Perspectives Received
-        </h2>
+      {!hasPoll && (
+        <section className="mt-8">
+          <h2 className="text-2xl font-bold">
+            {comments?.length || 0} Perspectives Received
+          </h2>
 
-        <p className="mt-1 text-sm text-gray-500">
-          Help the poster see their situation more clearly. Share personal perspective,
-          not professional advice.
-        </p>
-
-        <div className="mt-4 rounded-2xl border border-neutral-800 bg-neutral-950 p-5">
-          <CommentForm postId={post.id} />
-
-          <p className="mt-4 text-xs leading-5 text-gray-500">
-            By posting a perspective, you agree to keep the discussion respectful and understand
-            that your response is a personal opinion, not professional advice.
+          <p className="mt-1 text-sm text-gray-500">
+            Help the poster see their situation more clearly. Share personal perspective,
+            not professional advice.
           </p>
-        </div>
 
-        <div className="mt-6 space-y-4">
-          {comments?.map((comment) => (
-            <div
-              key={comment.id}
-              className="rounded-2xl border border-neutral-800 bg-neutral-950 p-5"
-            >
-              <div className="mb-3 flex flex-wrap gap-2">
-                {comment.perspective_tag && (
-                  <span className="rounded-full border border-purple-500/30 bg-purple-500/10 px-3 py-1 text-xs text-purple-300">
-                    {comment.perspective_tag}
-                  </span>
-                )}
+          <div className="mt-4 rounded-2xl border border-neutral-800 bg-neutral-950 p-5">
+            <CommentForm postId={post.id} />
 
-                {comment.changed_perspective && (
-                  <span className="rounded-full border border-purple-500/30 bg-purple-500/10 px-3 py-1 text-xs text-purple-200">
-                    Changed someone&apos;s perspective
-                  </span>
-                )}
+            <p className="mt-4 text-xs leading-5 text-gray-500">
+              By posting a perspective, you agree to keep the discussion respectful and understand
+              that your response is a personal opinion, not professional advice.
+            </p>
+          </div>
+
+          <div className="mt-6 space-y-4">
+            {comments?.map((comment) => (
+              <div
+                key={comment.id}
+                className="rounded-2xl border border-neutral-800 bg-neutral-950 p-5"
+              >
+                <div className="mb-3 flex flex-wrap gap-2">
+                  {comment.perspective_tag && (
+                    <span className="rounded-full border border-purple-500/30 bg-purple-500/10 px-3 py-1 text-xs text-purple-300">
+                      {comment.perspective_tag}
+                    </span>
+                  )}
+
+                  {comment.changed_perspective && (
+                    <span className="rounded-full border border-purple-500/30 bg-purple-500/10 px-3 py-1 text-xs text-purple-200">
+                      Changed someone&apos;s perspective
+                    </span>
+                  )}
+                </div>
+
+                <p className="text-sm text-gray-500">
+                  {comment.anon_avatar || "🕊️"}{" "}
+                  {comment.anonymous_name || "Anonymous"}
+                </p>
+
+                <p className="mt-3 whitespace-pre-wrap leading-7 text-gray-200">
+                  {comment.body}
+                </p>
+
+                <div className="mt-4 flex flex-wrap gap-3">
+                  <HelpfulButton
+                    commentId={comment.id}
+                    initialCount={comment.helpful_count || 0}
+                  />
+
+                  <ChangedPerspectiveButton
+                    commentId={comment.id}
+                    initialValue={comment.changed_perspective || false}
+                  />
+                </div>
+
+                <ReportButton targetType="comment" targetId={comment.id} />
               </div>
-
-              <p className="text-sm text-gray-500">
-                {comment.anon_avatar || "🕊️"}{" "}
-                {comment.anonymous_name || "Anonymous"}
-              </p>
-
-              <p className="mt-3 whitespace-pre-wrap leading-7 text-gray-200">
-                {comment.body}
-              </p>
-
-              <div className="mt-4 flex flex-wrap gap-3">
-                <HelpfulButton
-                  commentId={comment.id}
-                  initialCount={comment.helpful_count || 0}
-                />
-
-                <ChangedPerspectiveButton
-                  commentId={comment.id}
-                  initialValue={comment.changed_perspective || false}
-                />
-              </div>
-
-              <ReportButton targetType="comment" targetId={comment.id} />
-            </div>
-          ))}
-        </div>
-      </section>
+            ))}
+          </div>
+        </section>
+      )}
 
       {similarPosts && similarPosts.length > 0 && (
         <section className="mt-10 border-t border-neutral-800 pt-8">
@@ -243,9 +247,7 @@ export default async function PostPage({
                   {similarPost.category || "Life"}
                 </span>
 
-                <h3 className="mt-2 font-semibold">
-                  {similarPost.title}
-                </h3>
+                <h3 className="mt-2 font-semibold">{similarPost.title}</h3>
 
                 <p className="mt-2 line-clamp-2 text-sm text-gray-400">
                   {similarPost.body}
