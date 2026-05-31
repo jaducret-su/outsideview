@@ -3,6 +3,8 @@
 import { useState } from "react";
 import { getAnonymousIdentity } from "@/lib/anonymousIdentity";
 import ReportButton from "@/app/components/ReportButton";
+import PollHelpfulButton from "./PollHelpfulButton";
+import PollChangedPerspectiveButton from "./PollChangedPerspectiveButton";
 
 type PollComment = {
   id: string;
@@ -11,6 +13,8 @@ type PollComment = {
   anon_avatar?: string | null;
   selected_choice?: "a" | "b" | null;
   selected_option?: string | null;
+  helpful_count?: number | null;
+  changed_perspective?: boolean | null;
 };
 
 export default function PollSection({
@@ -108,6 +112,8 @@ export default function PollSection({
           anon_avatar: identity.anon_avatar,
           selected_choice: selectedChoice,
           selected_option: selectedOption,
+          helpful_count: 0,
+          changed_perspective: false,
         },
         ...pollComments,
       ]);
@@ -135,30 +141,15 @@ export default function PollSection({
   }
 
   function barClass(choice: "a" | "b") {
-    if (selectedChoice === choice) {
-      return "bg-purple-500";
-    }
-
-    if (leadingChoice === choice) {
-      return "bg-purple-500/70";
-    }
-
+    if (selectedChoice === choice) return "bg-purple-500";
+    if (leadingChoice === choice) return "bg-purple-500/70";
     return "bg-neutral-700";
   }
 
   function getSelectedOptionLabel(comment: PollComment) {
-    if (comment.selected_option) {
-      return comment.selected_option;
-    }
-
-    if (comment.selected_choice === "a") {
-      return optionA;
-    }
-
-    if (comment.selected_choice === "b") {
-      return optionB;
-    }
-
+    if (comment.selected_option) return comment.selected_option;
+    if (comment.selected_choice === "a") return optionA;
+    if (comment.selected_choice === "b") return optionB;
     return null;
   }
 
@@ -259,7 +250,7 @@ export default function PollSection({
         />
 
         <p className="mt-2 text-xs text-gray-500">
-          You must vote before adding your poll perspective.
+          Poll posts use this section instead of a separate comment area.
         </p>
 
         <button className="mt-3 rounded-lg bg-purple-600 px-4 py-2 text-sm font-medium text-white hover:bg-purple-700">
@@ -288,11 +279,19 @@ export default function PollSection({
                   key={comment.id}
                   className="rounded-xl border border-neutral-800 bg-neutral-900 p-4"
                 >
-                  {selectedOptionLabel && (
-                    <span className="mb-3 inline-block rounded-full border border-purple-500/30 bg-purple-500/10 px-3 py-1 text-xs font-medium text-purple-300">
-                      Voted: {selectedOptionLabel}
-                    </span>
-                  )}
+                  <div className="mb-3 flex flex-wrap gap-2">
+                    {selectedOptionLabel && (
+                      <span className="inline-block rounded-full border border-purple-500/30 bg-purple-500/10 px-3 py-1 text-xs font-medium text-purple-300">
+                        Voted: {selectedOptionLabel}
+                      </span>
+                    )}
+
+                    {comment.changed_perspective && (
+                      <span className="inline-block rounded-full border border-purple-500/30 bg-purple-500/10 px-3 py-1 text-xs font-medium text-purple-200">
+                        Changed someone&apos;s perspective
+                      </span>
+                    )}
+                  </div>
 
                   <p className="text-sm text-gray-500">
                     {comment.anon_avatar || "🕊️"}{" "}
@@ -302,6 +301,18 @@ export default function PollSection({
                   <p className="mt-2 whitespace-pre-wrap leading-7 text-gray-200">
                     {comment.body}
                   </p>
+
+                  <div className="mt-4 flex flex-wrap gap-3">
+                    <PollHelpfulButton
+                      commentId={comment.id}
+                      initialCount={comment.helpful_count || 0}
+                    />
+
+                    <PollChangedPerspectiveButton
+                      commentId={comment.id}
+                      initialValue={comment.changed_perspective || false}
+                    />
+                  </div>
 
                   <ReportButton
                     targetType="poll_comment"

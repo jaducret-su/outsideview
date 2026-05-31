@@ -59,15 +59,11 @@ export default async function PostPage({
     .order("helpful_count", { ascending: false })
     .order("created_at", { ascending: false });
 
-  const { data: pollComments, error: pollCommentsError } = await supabase
-  .from("poll_comments")
-  .select("*")
-  .eq("post_id", id)
-  .order("created_at", { ascending: false });
-
-if (pollCommentsError) {
-  console.error("Poll comments error:", pollCommentsError.message);
-}
+  const { data: pollComments } = await supabase
+    .from("poll_comments")
+    .select("*")
+    .eq("post_id", id)
+    .order("created_at", { ascending: false });
 
   const { data: similarPosts } = await supabase
     .from("posts")
@@ -104,33 +100,31 @@ if (pollCommentsError) {
 
         <h1 className="mt-4 text-4xl font-bold leading-tight">{post.title}</h1>
 
-        <div className="mt-5 rounded-2xl border border-neutral-800 bg-neutral-950 p-5">
-          <div className="flex items-center gap-3">
-            <span className="text-3xl">{post.anon_avatar || "🕊️"}</span>
+        <div className="mt-4 flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-gray-500">
+          <span className="text-lg">{post.anon_avatar || "🕊️"}</span>
 
-            <div>
-              <p className="font-semibold">
-                {post.anonymous_name || "Anonymous"}
-              </p>
+          <span className="font-medium text-gray-300">
+            {post.anonymous_name || "Anonymous"}
+          </span>
 
-              <p className="text-sm text-gray-500">
-                Helpful Perspectives: {profile?.helpful_perspectives || 0}
-              </p>
+          <span>
+            Helpful Perspectives Given: {profile?.helpful_perspectives || 0}
+          </span>
 
-              <p className="text-sm text-gray-500">
-                Member since {memberSince(profile?.created_at)}
-              </p>
-            </div>
+          <span>
+            Member since {memberSince(profile?.created_at)}
+          </span>
           </div>
-        </div>
 
         {post.perspective_request && (
-          <div className="mt-5 rounded-2xl border border-purple-500/20 bg-purple-500/5 p-4">
-            <p className="text-sm font-medium text-purple-300">
-              Perspective requested
-            </p>
+          <div className="mt-5 inline-flex flex-wrap items-center gap-2 rounded-full border border-purple-500/20 bg-purple-500/5 px-4 py-2 text-sm">
+            <span className="font-medium text-purple-300">
+                Perspective requested:
+            </span>
 
-            <p className="mt-1 text-gray-300">{post.perspective_request}</p>
+            <span className="text-gray-300">
+              {post.perspective_request}
+            </span>
           </div>
         )}
 
