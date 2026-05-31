@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { supabase } from "@/lib/supabase";
+import { moderateContent } from "@/lib/moderation";
 
 function guessCategory(text: string) {
   const lower = text.toLowerCase();
@@ -11,21 +12,6 @@ function guessCategory(text: string) {
   if (lower.includes("anxious") || lower.includes("stress") || lower.includes("mental")) return "Wellbeing";
 
   return "Life";
-}
-
-function checkBasicModeration(title: string, body: string) {
-  const text = `${title} ${body}`.toLowerCase();
-
-  const blocked = ["kill yourself", "kys", "dox", "phone number is", "address is"];
-  const spam = ["http://", "https://", "www.", "crypto giveaway", "free money"];
-
-  if (title.length > 120) return "Please keep the title under 120 characters.";
-  if (body.length > 2500) return "Please keep your story under 2,500 characters.";
-  if (body.length < 20) return "Please share a little more context.";
-  if (blocked.some((word) => text.includes(word))) return "This post appears to include harmful or identifying content.";
-  if (spam.some((word) => text.includes(word))) return "This post looks like spam or promotion.";
-
-  return null;
 }
 
 export async function POST(req: Request) {
@@ -45,12 +31,36 @@ export async function POST(req: Request) {
     } = await req.json();
 
     if (!title || !body || !anon_id || !anonymous_name) {
-      return NextResponse.json({ error: "Missing required post information." }, { status: 400 });
+      return NextResponse.json(
+        { error: "Missing required post information." },
+        { status: 400 }
+      );
     }
 
-    const moderationError = checkBasicModeration(title, body);
+    const moderationError = moderateContent({
+      title,
+      body,
+      type: "post",
+    });
+
     if (moderationError) {
       return NextResponse.json({ error: moderationError }, { status: 400 });
+    }
+
+    if (poll_question || poll_option_a || poll_option_b) {
+      const pollText = `${poll_question || ""} ${poll_option_a || ""} ${poll_option_b || ""}`;
+
+      const pollModerationError = moderateContent({
+        body: pollText,
+        type: "poll_comment",
+      });
+
+      if (pollModerationError) {
+        return NextResponse.json(
+          { error: `Poll issue: ${pollModerationError}` },
+          { status: 400 }
+        );
+      }
     }
 
     await supabase.from("anon_profiles").upsert({
@@ -59,8 +69,7 @@ export async function POST(req: Request) {
       anon_avatar,
     });
 
-    const validPoll =
-      poll_question && poll_option_a && poll_option_b;
+    const validPoll = poll_question && poll_option_a && poll_option_b;
 
     const { data, error } = await supabase
       .from("posts")
@@ -92,6 +101,9 @@ export async function POST(req: Request) {
 
     return NextResponse.json({ success: true, data });
   } catch (err: any) {
-    return NextResponse.json({ error: err.message || "Unknown error" }, { status: 500 });
+    return NextResponse.json(
+      { error: err.message || "Unknown error" },
+      { status: 500 }
+    );
   }
 }
