@@ -4,11 +4,17 @@ export default function Navbar() {
   return (
     <header className="border-b border-neutral-900 bg-black/80 backdrop-blur">
       <nav className="mx-auto flex max-w-5xl flex-col gap-4 px-6 py-4 text-white sm:flex-row sm:items-center sm:justify-between">
-        <Link href="/" className="text-xl font-bold">OutsideView</Link>
+        <Link href="/" className="text-xl font-bold">
+          OutsideView
+        </Link>
 
         <div className="flex flex-wrap items-center gap-4 text-sm text-gray-400">
           <Link href="/feed" className="transition hover:text-white">
             Feed
+          </Link>
+
+          <Link href="/search" className="transition hover:text-white">
+            Search
           </Link>
 
           <Link href="/perspectives" className="transition hover:text-white">
