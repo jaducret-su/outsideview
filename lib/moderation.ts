@@ -42,14 +42,11 @@ const harassmentPhrases = [
   "you are worthless",
   "youre worthless",
   "you sound stupid",
-  "this is stupid",
   "your post is stupid",
   "your perspective is stupid",
 ];
 
 const hateAndIdentityTerms = [
-  "racist slur",
-  "homophobic slur",
   "retard",
   "retarded",
   "fag",
@@ -63,10 +60,24 @@ const threatAndSelfHarmPhrases = [
   "kys",
   "i will kill",
   "im going to kill",
-  "i'm going to kill",
+  "i m going to kill",
   "i will hurt",
   "im going to hurt",
-  "i'm going to hurt",
+  "i m going to hurt",
+];
+
+const selfHarmCrisisPhrases = [
+  "i want to kill myself",
+  "i am going to kill myself",
+  "im going to kill myself",
+  "i m going to kill myself",
+  "i want to die",
+  "i dont want to live",
+  "i do not want to live",
+  "ending my life",
+  "end my life",
+  "hurt myself",
+  "harm myself",
 ];
 
 const doxxingPhrases = [
@@ -132,6 +143,10 @@ export function moderateContent({
 
   if ((type === "comment" || type === "poll_comment") && body.length < 10) {
     return "Please write a more thoughtful perspective before posting.";
+  }
+
+  if (containsAny(text, selfHarmCrisisPhrases)) {
+    return "OutsideView is not equipped for crisis support. If you may hurt yourself or someone else, call emergency services or contact a crisis hotline immediately. In the U.S. and Canada, call or text 988.";
   }
 
   if (containsAny(text, threatAndSelfHarmPhrases)) {

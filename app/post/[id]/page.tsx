@@ -131,6 +131,18 @@ export default async function PostPage({
           {post.body}
         </p>
 
+        <div className="mt-6 rounded-2xl border border-neutral-800 bg-neutral-950 p-4">
+          <p className="text-sm text-gray-400">
+            Perspectives on OutsideView are personal opinions from community members.
+            They are not professional medical, mental health, legal, financial, or emergency advice.
+          </p>
+
+          <p className="mt-2 text-sm text-gray-500">
+            If you are in crisis or may hurt yourself or someone else, contact emergency services
+            or a crisis hotline immediately. In the U.S. and Canada, call or text 988.
+          </p>
+        </div>
+
         <ReportButton targetType="post" targetId={post.id} />
       </article>
 
@@ -152,11 +164,17 @@ export default async function PostPage({
         </h2>
 
         <p className="mt-1 text-sm text-gray-500">
-          Help the poster see their situation more clearly.
+          Help the poster see their situation more clearly. Share personal perspective,
+          not professional advice.
         </p>
 
         <div className="mt-4 rounded-2xl border border-neutral-800 bg-neutral-950 p-5">
           <CommentForm postId={post.id} />
+
+          <p className="mt-4 text-xs leading-5 text-gray-500">
+            By posting a perspective, you agree to keep the discussion respectful and understand
+            that your response is a personal opinion, not professional advice.
+          </p>
         </div>
 
         <div className="mt-6 space-y-4">
