@@ -1,6 +1,7 @@
 import "./globals.css";
 import Navbar from "./components/Navbar";
 import Footer from "./components/Footer";
+import { Analytics } from "@vercel/analytics/next";
 
 export const metadata = {
   title: "OutsideView",
@@ -17,6 +18,7 @@ export default function RootLayout({
       <body className="min-h-screen bg-black text-white">
         <Navbar />
         {children}
+        <Analytics />
         <Footer />
       </body>
     </html>
