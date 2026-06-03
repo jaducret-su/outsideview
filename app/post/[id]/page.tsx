@@ -192,9 +192,10 @@ export default async function PostPage({
                     </span>
                   )}
 
-                  {comment.changed_perspective && (
+                  {comment.changed_perspective_count > 0 && (
                     <span className="rounded-full border border-purple-500/30 bg-purple-500/10 px-3 py-1 text-xs text-purple-200">
-                      Changed someone&apos;s perspective
+                      Changed {comment.changed_perspective_count} perspective
+                      {comment.changed_perspective_count === 1 ? "" : "s"}
                     </span>
                   )}
                 </div>
@@ -216,7 +217,7 @@ export default async function PostPage({
 
                   <ChangedPerspectiveButton
                     commentId={comment.id}
-                    initialValue={comment.changed_perspective || false}
+                    initialCount={comment.changed_perspective_count || 0}
                   />
                 </div>
 

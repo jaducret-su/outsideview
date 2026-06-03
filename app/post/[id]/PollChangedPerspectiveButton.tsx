@@ -1,39 +1,53 @@
 "use client";
 
 import { useState } from "react";
+import { getAnonymousIdentity } from "@/lib/anonymousIdentity";
 
 export default function PollChangedPerspectiveButton({
   commentId,
-  initialValue,
+  initialCount,
 }: {
   commentId: string;
-  initialValue: boolean;
+  initialCount: number;
 }) {
-  const [changed, setChanged] = useState(initialValue);
+  const [count, setCount] = useState(initialCount);
+  const [clicked, setClicked] = useState(false);
 
   async function markChanged() {
-    if (changed) return;
+    if (clicked) return;
+
+    const identity = getAnonymousIdentity();
 
     const res = await fetch("/api/poll-comments/changed-perspective", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({ commentId }),
+      body: JSON.stringify({
+        commentId,
+        anonId: identity.anon_id,
+      }),
     });
 
+    const data = await res.json();
+
     if (res.ok) {
-      setChanged(true);
+      setCount(data.count ?? count);
+      setClicked(true);
+    } else {
+      alert(data.error || "Something went wrong.");
     }
   }
 
   return (
     <button
       onClick={markChanged}
-      disabled={changed}
+      disabled={clicked}
       className="rounded bg-purple-600 px-3 py-1 text-sm font-medium text-white transition hover:bg-purple-700 disabled:opacity-60"
     >
-      {changed ? "Changed Perspective" : "Changed My Perspective"}
+      {clicked
+        ? `Perspective Changed · ${count}`
+        : `Changed My Perspective · ${count}`}
     </button>
   );
 }
